@@ -1,0 +1,243 @@
+1.Install Nmap.
+┌──(kali㉿kali)-[~]
+└─$ sudo apt install -y nmap
+nmap is already the newest version (7.95+dfsg-3kali1).
+nmap set to manually installed.
+Summary:
+  Upgrading: 0, Installing: 0, Removing: 0, Not Upgrading: 0
+
+-------------------------------------------------------------------------------
+
+2.Finding Local IP.
+#ip -o -f inet addr show
+192.168.247.0/24
+
+-------------------------------------------------------------------------------
+
+3.nmap -sS 192.168.247.0/24 to perform TCP SYN scan.
+┌──(kali㉿kali)-[~]
+└─$ nmap -sS 192.168.247.0/24
+
+Starting Nmap 7.95 ( https://nmap.org ) at 2025-11-13 07:29 EST
+Nmap scan report for 192.168.247.1
+Host is up (0.00096s latency).
+Not shown: 991 closed tcp ports (reset)
+PORT      STATE SERVICE
+80/tcp    open  http
+135/tcp   open  msrpc
+139/tcp   open  netbios-ssn
+443/tcp   open  https
+445/tcp   open  microsoft-ds
+902/tcp   open  iss-realsecure
+912/tcp   open  apex-mesh
+3306/tcp  open  mysql
+12345/tcp open  netbus
+MAC Address: 00:50:56:C0:00:08 (VMware)
+
+Nmap scan report for 192.168.247.2
+Host is up (0.00013s latency).
+Not shown: 999 closed tcp ports (reset)
+PORT   STATE SERVICE
+53/tcp open  domain
+MAC Address: 00:50:56:EA:1F:63 (VMware)
+
+Nmap scan report for 192.168.247.254
+Host is up (0.00015s latency).
+All 1000 scanned ports on 192.168.247.254 are in ignored states.
+Not shown: 1000 filtered tcp ports (no-response)
+MAC Address: 00:50:56:FE:16:2F (VMware)
+
+Nmap scan report for 192.168.247.137
+Host is up (0.0000070s latency).
+All 1000 scanned ports on 192.168.247.137 are in ignored states.
+Not shown: 1000 closed tcp ports (reset)
+
+Nmap done: 256 IP addresses (4 hosts up) scanned in 6.01 seconds
+
+-------------------------------------------------------------------------------
+
+4.Note down IP addresses and open ports found.
+1. Host: 192.168.247.1
+
+Status: Host is up
+
+| Port          | Service        | Description                          |
+| ------------- | -------------- | ------------------------------------ |
+| **80/tcp**    | http           | Web server / interface               |
+| **135/tcp**   | msrpc          | Windows RPC service                  |
+| **139/tcp**   | netbios-ssn    | NetBIOS session (file sharing)       |
+| **443/tcp**   | https          | Secure web server                    |
+| **445/tcp**   | microsoft-ds   | SMB file sharing                     |
+| **902/tcp**   | iss-realsecure | VMware authentication port           |
+| **912/tcp**   | apex-mesh      | VMware or custom service             |
+| **3306/tcp**  | mysql          | MySQL database service               |
+| **12345/tcp** | netbus         | **Known remote-control Trojan port** |
+
+MAC Address: 00:50:56:C0:00:08 (VMware)
+
+2. Host: 192.168.247.2
+
+Status: Host is up
+
+| Port       | Service | Description |
+| ---------- | ------- | ----------- |
+| **53/tcp** | domain  | DNS service |
+
+3. Host: 192.168.247.254
+
+Status: Host is up
+Open Ports:
+
+No open ports detected
+
+All 1000 scanned ports are filtered (firewall blocking)
+
+MAC Address: 00:50:56:FE:16:2F (VMware)
+
+4. Host: 192.168.247.137 (THIS IS YOUR MACHINE)
+
+Status: Host is up
+Open Ports:
+
+None
+
+All scanned ports appear closed
+
+(This is expected for a Kali machine with no services running.)
+
+-------------------------------------------------------------------------------
+
+5.Optionally analyze packet capture with Wireshark.
+Opened Wireshark in kali Linux.
+Started capturing traffic at eth0 address.
+Started the nmap scan on local address 192.168.247.0/24.
+Stopped the capture after nmap scan is completed.
+
+-------------------------------------------------------------------------------
+
+6.Research common services running on those ports.
+Using filters in wireshark: tcp.port == 80
+Number : 539
+Time : 40.567862891
+Source Address : 192.168.247.137
+Destination Address : 192.168.247.2
+Protocol : TCP
+Length : 58
+Info : 61653 → 80 [SYN] Seq=0 Win=1024 Len=0 MSS=1460
+
+Using filters in wireshark: tcp.port == 443
+Number : 553
+Time : 40.570837170
+Source Address : 192.168.247.137
+Destination Address : 192.168.247.2
+Protocol : TCP
+Length : 58
+Info : 61653 → 443 [SYN] Seq=0 Win=1024 Len=0 MSS=1460
+
+Using filters in wireshark: tcp.port == 445
+Number : 592
+Time : 40.574996014
+Source Address : 192.168.247.137
+Destination Address : 192.168.247.2
+Protocol : TCP
+Length : 58
+Info : 61653 → 445 [SYN] Seq=0 Win=1024 Len=0 MSS=1460
+
+-------------------------------------------------------------------------------
+
+7.Identify potential security risks from open ports.
+
+Host: 192.168.247.1
+Port 80 (HTTP)
+Traffic is not encrypted.
+Login pages or admin panels running over HTTP can expose credentials.
+Vulnerable to attacks like directory traversal, outdated web server exploits, and brute force.
+
+Port 135 (MSRPC)
+Common target for Windows RPC vulnerabilities.
+Can be used for remote code execution if the service is misconfigured or unpatched.
+
+Port 139 (NetBIOS)
+Allows Windows file-sharing.
+Can leak system information.
+Often targeted for credential theft and lateral movement.
+
+Port 443 (HTTPS)
+Generally safe, but:
+Misconfigured SSL/TLS versions can expose it to downgrade attacks.
+Vulnerable web applications can still be exploited even over HTTPS.
+
+Port 445 (SMB)
+Very high risk.
+SMB has been exploited by malware such as WannaCry and EternalBlue.
+Can expose shared folders if permissions are weak.
+
+Port 3306 (MySQL)
+Exposes the database on the network.
+Weak or default passwords can allow unauthorized access.
+Attackers may extract or modify data if the server is not secured.
+
+Port 902 / 912 (VMware Services)
+These ports are related to VMware remote services.
+If exposed, they may allow unauthorized interactions with virtualization components.
+Should usually be restricted to internal management only.
+
+Port 12345 (NetBus) — High Risk
+This port is historically linked to the NetBus remote-control Trojan.
+Even if it’s just a VMware artifact, the presence of this port is considered suspicious.
+Should be disabled unless intentionally required.
+
+
+Host: 192.168.247.2
+Port 53 (DNS)
+Open DNS port can be abused for:
+DNS spoofing
+DNS amplification (DDoS)
+Information leakage if the resolver allows zone transfers
+Safe if tightly configured, but risky if exposed to the whole network.
+
+Host: 192.168.247.254
+All ports are filtered.
+No direct vulnerabilities visible, but indicates the device is using a firewall.
+
+Host: 192.168.247.137 (Your machine)
+No open ports detected, so no direct exposure.
+
+-------------------------------------------------------------------------------
+
+8.Save scan results as a text or HTML file.
+Starting Nmap 7.95 ( https://nmap.org ) at 2025-11-13 07:29 EST
+Nmap scan report for 192.168.247.1
+Host is up (0.00096s latency).
+Not shown: 991 closed tcp ports (reset)
+PORT      STATE SERVICE
+80/tcp    open  http
+135/tcp   open  msrpc
+139/tcp   open  netbios-ssn
+443/tcp   open  https
+445/tcp   open  microsoft-ds
+902/tcp   open  iss-realsecure
+912/tcp   open  apex-mesh
+3306/tcp  open  mysql
+12345/tcp open  netbus
+MAC Address: 00:50:56:C0:00:08 (VMware)
+
+Nmap scan report for 192.168.247.2
+Host is up (0.00013s latency).
+Not shown: 999 closed tcp ports (reset)
+PORT   STATE SERVICE
+53/tcp open  domain
+MAC Address: 00:50:56:EA:1F:63 (VMware)
+
+Nmap scan report for 192.168.247.254
+Host is up (0.00015s latency).
+All 1000 scanned ports on 192.168.247.254 are in ignored states.
+Not shown: 1000 filtered tcp ports (no-response)
+MAC Address: 00:50:56:FE:16:2F (VMware)
+
+Nmap scan report for 192.168.247.137
+Host is up (0.0000070s latency).
+All 1000 scanned ports on 192.168.247.137 are in ignored states.
+Not shown: 1000 closed tcp ports (reset)
+
+Nmap done: 256 IP addresses (4 hosts up) scanned in 6.01 seconds
