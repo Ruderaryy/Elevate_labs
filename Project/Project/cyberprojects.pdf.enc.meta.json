@@ -1,0 +1,13 @@
+{
+  "original_filename": "cyberprojects.pdf",
+  "original_path": "C:\\Users\\Shreepad Malgundkar\\OneDrive\\Desktop\\Project\\cyberprojects.pdf",
+  "encrypted_filename": "cyberprojects.pdf.enc",
+  "encrypted_path": "C:\\Users\\Shreepad Malgundkar\\OneDrive\\Desktop\\Project\\cyberprojects.pdf.enc",
+  "timestamp_utc": "2025-12-24T06:15:14.733796Z",
+  "plaintext_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "salt_b64": "9+KMxSXjUQ3liBlzLTtGgg==",
+  "nonce_b64": "yC47XnW0cmDZrlPy",
+  "kdf": "PBKDF2-HMAC-SHA256",
+  "kdf_iterations": 200000,
+  "aes": "AES-GCM-256"
+}
